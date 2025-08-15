@@ -28,21 +28,21 @@
 //     console.log("Hello Cutiee");
 // })
 
-interface User{
-    firstname: string,
-    age: number,
-    lastname: string
-}
+// interface User{
+//     firstname: string,
+//     age: number,
+//     lastname: string
+// }
 
 function greet(user : UserType){
     console.log("hello " + user.firstname +" " + user.lastname+ " Your age: " + user.age);
 }
 
-let user1: User  = { 
-    firstname: "Harshii",
-    age: 22,
-    lastname: "Khatri"
-}
+// let user1: User  = { 
+//     firstname: "Harshii",
+//     age: 22,
+//     lastname: "Khatri"
+// }
 
 
 let user2: UserType  = { 
@@ -72,23 +72,141 @@ printId("101");
 printId(2301);
 
 
-// Union:
-interface Manager{
-    name: string,
-    age: number
+// // Union:
+// interface Manager{
+//     name: string,
+//     age: number
+// }
+
+// interface Employee{
+//     name: string,
+//     departement: string
+// }
+
+// type TeamLead = Manager & Employee
+
+// let t: TeamLead ={
+//     name: "Harpreet",
+//     age: 23,
+//     departement: "SE"
+// }
+
+// console.log(t);
+
+interface People{
+    name: string;
+    age: number;
+    greet(name: string): string;
 }
 
-interface Employee{
-    name: string,
-    departement: string
+class Manager implements People{
+    name: string;
+    age: number;
+
+    constructor(name: string, age: number){
+        this.name = name;
+        this.age = age;
+    }
+
+    greet() : string{
+        return "Hi " + this.name;
+    }
+    
 }
 
-type TeamLead = Manager & Employee
+console.log("---------------------")
+let user = new Manager("John", 30);
+console.log(user.greet());
 
-let t: TeamLead ={
-    name: "Harpreet",
-    age: 23,
-    departement: "SE"
+// abstract class User{
+//     name!: string;
+//     abstract greet():  string;
+// }
+
+
+// class Employee extends User{
+//     name: string;
+
+//     constructor(name: string){
+//         super();
+//         this.name = name;
+//     }
+
+//     greet(): string {
+//         return "Hi " + this.name;
+//     }
+// }
+// console.log("--------------")
+// let emp = new Employee("Happy");
+// console.log(emp.greet());
+
+
+interface Admin{
+    name: string;
+    permission: string;
 }
 
-console.log(t);
+// interface User{
+//     name: string;
+//     age: number;
+// }
+
+// type UserOrAdmin = User | Admin;
+
+// function greet1( user: UserOrAdmin){
+//     console.log(user.name);
+// }
+
+// interface User{
+//     age: number | string;
+// }
+
+// Arrays in TS:
+
+function getMax(nums: number[]){
+    let maxVal = -Infinity
+    for (let i = 0; i < nums.length; i++) {
+        if (nums[i] !== undefined && nums[i] > maxVal) {
+            maxVal = nums[i];
+        }
+    }
+    return maxVal;
+
+}
+
+console.log("---------------");
+console.log(getMax([1,2,3,4,5]));
+
+interface User{
+    firstName: string;
+    lastName: string;
+    age: number;
+}
+
+function isLegal(user: User[]) {
+    // for(let i=0; i<user.length; i++){
+    //     if(user[i]?.age >=18){
+    //         return true;
+    //     }
+    // }
+    // return false;
+    let ans = [];
+    for(let i=0; i<user.length; i++){
+        if(user[i]?.age > 18){
+            ans.push(user[i]);
+        }
+    }
+    return ans;
+}
+
+const filteredUsers = isLegal([
+    {
+        firstName: "harkirat",
+        lastName: "Singh",
+        age: 19
+    }
+])
+
+//console.log(isLegal([{ firstName: "abc", lastName: "xyz", age: 18 }]));
+
+console.log(filteredUsers);
