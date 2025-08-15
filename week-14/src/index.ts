@@ -118,27 +118,27 @@ console.log("---------------------")
 let user = new Manager("John", 30);
 console.log(user.greet());
 
-// abstract class User{
-//     name!: string;
-//     abstract greet():  string;
-// }
+abstract class User{
+    name!: string;
+    abstract greet():  string;
+}
 
 
-// class Employee extends User{
-//     name: string;
+class Employee extends User{
+    name: string;
 
-//     constructor(name: string){
-//         super();
-//         this.name = name;
-//     }
+    constructor(name: string){
+        super();
+        this.name = name;
+    }
 
-//     greet(): string {
-//         return "Hi " + this.name;
-//     }
-// }
-// console.log("--------------")
-// let emp = new Employee("Happy");
-// console.log(emp.greet());
+    greet(): string {
+        return "Hi " + this.name;
+    }
+}
+console.log("--------------")
+let emp = new Employee("Happy");
+console.log(emp.greet());
 
 
 interface Admin{
@@ -177,13 +177,13 @@ function getMax(nums: number[]){
 console.log("---------------");
 console.log(getMax([1,2,3,4,5]));
 
-interface User{
+interface User2{
     firstName: string;
     lastName: string;
     age: number;
 }
 
-function isLegal(user: User[]) {
+function isLegal(user: User2[]) {
     // for(let i=0; i<user.length; i++){
     //     if(user[i]?.age >=18){
     //         return true;
