@@ -15,6 +15,7 @@
     "cookie-signature": "^1.2.2",
     "debug": "^4.4.1",
     "depd": "^2.0.0",
+    "dotenv": "^17.2.1",
     "dunder-proto": "^1.0.1",
     "ee-first": "^1.1.1",
     "encodeurl": "^2.0.0",
@@ -76,13 +77,17 @@
     "zod": "^4.0.17"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc -b",
+    "start" : "node dist/index.js",
+    "dev": "npm run build && npm run start"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
+    "@types/dotenv": "^6.1.1",
     "@types/express": "^5.0.3",
     "@types/jsonwebtoken": "^9.0.10"
   }
