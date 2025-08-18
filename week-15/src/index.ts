@@ -1,20 +1,17 @@
 import express from 'express';
 import mongoose from "mongoose";
 import jwt from "jsonwebtoken";
-import { lowercase, z } from 'zod';
-import {userModel} from "./db"
-import dotenv from 'dotenv';
-
-dotenv.config();
-const db_url = process.env.MONGO_CONN_STRING as string;
+import { z } from 'zod';
+import {contentModel, userModel} from "./db"
+import { db_url } from './config';
+import { JWT_PASSWORD } from './config';
+import { AuthInfoReq, userMiddleware } from './middleware';
 
 
 // async function main(){
 //     await mongoose.connect(db_url)
 // }
 mongoose.connect(db_url)
-
-const JWT_SEC = "BrainlyProject"
 const app = express();
 
 app.use(express.json());
@@ -73,7 +70,7 @@ app.post("/api/v1/signin",async(req, res) =>{
     if(existingUser){
         const token = jwt.sign({
             id: existingUser._id
-        }, JWT_SEC)
+        }, JWT_PASSWORD)
         res.status(200).json({
             message: "Successfully signed in",
             token
@@ -85,18 +82,48 @@ app.post("/api/v1/signin",async(req, res) =>{
     }
 }) 
 
-app.post("/api/v1/content", (req, res) =>{
+app.post("/api/v1/content", userMiddleware,async (req: AuthInfoReq, res) =>{
+    const link = req.body.link;
+    const type = req.body.type;
+    const title = req.body.title;
+    await contentModel.create({
+        title,
+        link,
+        type,
+        userId: req.userId,
+        tags: []
+    })
 
-})
-
-app.get("/api/v1/content", (req, res) =>{
-    res.json({
-        message: "Hi"
+    return res.json({
+        message: "content added"
     })
 })
 
-app.delete("/api/v1/content", (req, res) =>{
+app.get("/api/v1/content", userMiddleware, async (req: AuthInfoReq, res) =>{
+    const userId = req.userId;
+    const content = await contentModel.find({
+        userId: userId
+    }).populate("userId", "username")
+    res.json({
+        content 
+    })
 
+})
+
+app.delete("/api/v1/content", userMiddleware, async (req: AuthInfoReq, res) =>{
+    const contentId = req.body.contentId;
+    const userId = req.userId;
+    await contentModel.deleteOne({
+        _id: contentId,
+        userId: req.userId
+    })
+    const content = await contentModel.find({
+        userId: userId
+    }).populate("userId", "username")
+    res.json({
+        message: "Content deleted successfully",
+        content
+    })
 })
 
 
