@@ -2,11 +2,11 @@ import express from 'express';
 import mongoose from "mongoose";
 import jwt from "jsonwebtoken";
 import { z } from 'zod';
-import {contentModel, userModel} from "./db"
+import {contentModel, linkModel, userModel} from "./db"
 import { db_url } from './config';
 import { JWT_PASSWORD } from './config';
 import { AuthInfoReq, userMiddleware } from './middleware';
-
+import crypto from "crypto";
 
 // async function main(){
 //     await mongoose.connect(db_url)
@@ -127,13 +127,77 @@ app.delete("/api/v1/content", userMiddleware, async (req: AuthInfoReq, res) =>{
 })
 
 
-app.post("/api/v1/brain/share", (req, res) =>{
+app.post("/api/v1/brain/share", userMiddleware, async (req: AuthInfoReq, res) =>{
+    try{
+        const { share } = req.body;
+        const userId = req.userId;
+        
+        if(share){
+            let existing = await linkModel.findOne({userId});
+            if(!existing){
+                const hash = crypto.randomBytes(12).toString("hex");
+                existing = await linkModel.create({
+                    hash,
+                    userId
+                });
+            }
+            return res.json({
+                link: `/api/v1/brain/${existing.hash}`
+            })   
+        }else{
+            await linkModel.deleteOne({userId});
+            return res.json({link: null});
+        }
 
+    }catch(e){
+        res.status(500).json({message: "Error creating share link", error: e});
+    }
 })
 
 
-app.get("/api/v1/brain/:shareLink", (req, res) =>{
-    
+app.get("/api/v1/brain/:shareLink", userMiddleware, async (req: AuthInfoReq, res) =>{
+    try{
+        const { shareLink } = req.params;
+
+        const linkDoc = await linkModel.findOne({hash: shareLink});
+
+        if(!linkDoc){
+            return res.status(404).json({
+                message: "Invalid link or sharing disabled"
+            })
+        }
+
+        const user = await userModel.findById(linkDoc.userId);
+
+        if(!user){
+            return res.status(404).json({
+                message: "User not found"
+            })
+        }
+
+        const content = await contentModel.find({
+            userId: user._id
+        }).populate("tags").lean();
+
+        const formattedContent = content.map(c =>({
+            id: c._id,
+            type: c.type,
+            link: c.link,
+            title: c.title,
+            tags: c.tags.map((t: any) => t.title)
+        }));
+
+        res.json({
+            username: user.username,
+            content: formattedContent
+        })
+    }
+    catch(e){
+        res.status(500).json({
+            message: "Error fetching shared brain", 
+            error: e
+        });
+    }
 })
 
 
