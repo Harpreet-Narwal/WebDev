@@ -8,9 +8,7 @@ import { JWT_PASSWORD } from './config';
 import { AuthInfoReq, userMiddleware } from './middleware';
 import crypto from "crypto";
 
-// async function main(){
-//     await mongoose.connect(db_url)
-// }
+
 mongoose.connect(db_url)
 const app = express();
 

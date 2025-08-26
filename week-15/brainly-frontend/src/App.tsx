@@ -9,9 +9,7 @@ function App() {
 
   return (
     <>
-      <Button variant={'primary'} size={'sm'} text={''} onClick={function (): void {
-        throw new Error('Function not implemented.')
-      } }/>
+      <Button variant='primary' text={'add component'} />
     </>
   )
 }
