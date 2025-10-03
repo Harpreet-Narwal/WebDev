@@ -9,12 +9,17 @@ wss.on("connection", function(socket){
     // socket -> similar to req, res
 
     console.log("user connected");
-    setInterval(() => {
-        socket.send("Current price of Solana is "  + Math.random());
-    }, 1000)
-    socket.send("hi there");
+    // setInterval(() => {
+    //     socket.send("Current price of Solana is "  + Math.random());
+    // }, 1000)
+    // socket.send("hi there");
+
+
 
     socket.on("message", (e) =>{
+        if(e.toString() === "ping"){
+            socket.send("Pong");
+        }
         console.log(e.toString());
     })
 
