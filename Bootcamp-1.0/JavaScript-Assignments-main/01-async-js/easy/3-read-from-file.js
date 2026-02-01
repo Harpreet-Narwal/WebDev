@@ -5,3 +5,16 @@
 // Try to do an expensive operation below the file read and see how it affects the output. 
 // Make the expensive operation more and more expensive and see how it affects the output. 
 
+const fs = require('fs');
+
+function afterFileRead(err, contents){
+    if(!err){
+        console.log(contents);
+    }else{
+        console.log("Error reading file: ", err);
+        return;
+    }
+}
+
+
+fs.readFile("README.md", "utf-8", afterFileRead);
