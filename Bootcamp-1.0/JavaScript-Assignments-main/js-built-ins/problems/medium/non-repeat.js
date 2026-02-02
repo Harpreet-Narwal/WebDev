@@ -22,5 +22,27 @@
 */
 function nonrepeat(str) {
   // Your code here
+  // const char = str.split('').filter((index, pos, self) => {
+  //   return self.indexOf(index) == pos;
+  // }).join('');
+
+  // console.log(char);
+
+  let freq = {};
+
+  for(let ch of str){
+    freq[ch] = (freq[ch] || 0 ) + 1;
+  }
+
+  for(let ch of str){
+    if(freq[ch] === 1){
+      return ch;
+    }
+  }
+
+  return null;
+
+
 }
+
 module.exports = nonrepeat;

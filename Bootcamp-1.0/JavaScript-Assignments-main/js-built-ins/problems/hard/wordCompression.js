@@ -24,7 +24,28 @@
 
 function compressWords(arr) {
   // Your code here
+
+  let output = [];
+  let cnt = 1;
+  let result = "";
+  for(let i=1; i<=arr.length; i++){
+    if(arr[i] === arr[i-1]){
+      cnt++;
+    }else{
+      if(cnt > 1){
+        result += arr[i-1] + cnt;
+        output.push(result);
+        result = "";
+        cnt = 1;
+      }else{
+        output.push(arr[i-1]);
+      }
+    }
+  }
+
+  return output;
+
 }
 
-
+console.log(compressWords(["one", "two", "three"]))
 module.exports = compressWords;

@@ -20,6 +20,11 @@
 
 function getUniqueElements(arr) {
   // Your code here
+  return arr.filter((item, pos) =>{
+    return arr.indexOf(item)==pos;
+  })
 }
+
+console.log(getUniqueElements([10, 20, 30, 10, 40, 20]));
 
 module.exports = getUniqueElements;

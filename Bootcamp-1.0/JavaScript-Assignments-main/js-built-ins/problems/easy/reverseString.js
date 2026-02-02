@@ -20,6 +20,9 @@
 
 function reverseString(str) {
   // Your code here
+  let reverseStr = str.split('').reverse().join('');
+  
+  return reverseStr;
 }
 
 module.exports = reverseString;

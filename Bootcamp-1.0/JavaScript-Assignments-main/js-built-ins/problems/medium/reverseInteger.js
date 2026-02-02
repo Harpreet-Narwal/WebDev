@@ -23,6 +23,18 @@
 
 function reverseInteger(num) {
   // Your code here
+  let ans = 0;
+  let sign = Math.sign(num);
+  num = Math.abs(num);
+
+
+  while(num > 0){
+    ans = (num % 10) + (ans *10);
+    num = Math.floor(num/10);
+  }
+
+
+  return ans * sign;
 }
 
 module.exports = reverseInteger;

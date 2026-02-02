@@ -27,6 +27,26 @@
 
 function isPerfectNumber(num) {
   // Your code here
+  let factors = [];
+
+  if(num === 1){
+    return false;
+  }
+
+  for(let i=1; i<num; i++){
+    if(num % i == 0) factors.push(i);
+  }
+
+  const result = factors.reduce((acc, item) =>{
+      return acc + item;
+  } );
+
+  if(num == result){
+    return true;
+  }else{
+    return false;
+  }
+
 }
 
 module.exports = { isPerfectNumber };
