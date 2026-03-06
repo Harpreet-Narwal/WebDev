@@ -89,6 +89,6 @@
     res.status(200).json({message: "deleted"})
   })
 
-
+  app.listen(3000)
   
   module.exports = app;
