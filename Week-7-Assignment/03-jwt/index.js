@@ -15,6 +15,10 @@ const jwtPassword = 'secret';
  */
 function signJwt(username, password) {
     // Your code here
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if(!emailRegex.test(username) || password.length < 6) return null;
+
+    return jwt.sign({username, password}, jwtPassword);
 }
 
 /**
@@ -27,6 +31,12 @@ function signJwt(username, password) {
  */
 function verifyJwt(token) {
     // Your code here
+    try{
+        jwt.verify(token, jwtPassword);
+        return true;
+    }catch(error){
+        return false;
+    }
 }
 
 /**
@@ -38,6 +48,14 @@ function verifyJwt(token) {
  */
 function decodeJwt(token) {
     // Your code here
+    try{
+        const decoded = jwt.decode(token);
+        if(!decoded) return false;
+        return true
+    }
+    catch(e){
+        return false;
+    }
 }
 
 
