@@ -67,7 +67,7 @@ app.post("/notes", authMiddleware,  (req , res) =>{
 
 
 app.get("/notes",authMiddleware,  (req, res) =>{
-    const uesrname = req.username;
+    const username = req.username;
     const userNotes = notes.filter(note => note.username === username)
     
     res.status(200).json({userNotes});

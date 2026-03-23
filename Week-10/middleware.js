@@ -1,4 +1,7 @@
-function authMiddleware(req, res, next) {
+require("dotenv").config();
+const JWT_PASS = process.env.JWT_PASS
+
+function authMiddleware(req, res , next) {
     const token = req.header.token;
 
     if(!token){
@@ -7,8 +10,8 @@ function authMiddleware(req, res, next) {
         })
     }
 
-    const decoded = jwt.verify(token, jwtSecret)
-    const username = decoded.username;
+    const decoded = jwt.verify(token, JWT_PASS)
+    const userId = decoded.userId;
 
     if(!username){
         res.status(403).json({
@@ -16,7 +19,7 @@ function authMiddleware(req, res, next) {
         })
         return;
     }
-    req.username = username;
+    req.userId = userId;
     next();
 }
 
