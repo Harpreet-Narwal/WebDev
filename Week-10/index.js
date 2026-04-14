@@ -3,10 +3,17 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 const { authMiddleware } = require("./middleware");
 const app = express();
+const {userModel, organizationModel} = require("./models");
+const { default: mongoose } = require("mongoose");
+
 const JWT_PASS = process.env.JWT_PASS
+const DB_CONNECT = process.env.DB_CONNECT
+
 
 const jwtSecret = JWT_PASS
 app.use(express.json());
+mongoose.connect(DB_CONNECT)
+    .then(() => console.log("DB Connected Successfully"))
 
 
 // usernsme, password | USERS Table
@@ -14,60 +21,28 @@ app.use(express.json());
 // boards | BOARDS Table
 // Issues | ISSUES Table
 
-let USERS_ID = 3;
-let ORGANIZATION_ID = 3;
-let BOARD_ID = 2;
-let ISSUES_ID = 3;
+let USERS_ID = 1;
+let ORGANIZATION_ID = 1;
+let BOARD_ID = 1;
+let ISSUES_ID = 1;
 
 // Examples:
 
-const USERS = [{
-    id:1,
-    username: "Harkirat",
-    password: "123123"
-}, {
-    id:2,
-    username : "raman",
-    password : "123123"
-}];
-
-const ORGANIZATIONS = [{
-    id: 1,
-    title: "100xdevs",
-    description: "Learning coding platform",
-    admin: 1,
-    members: [2]
-}, {
-    id: 2,
-    title: "ramans orgs",
-    description: "Experimenting",
-    admin: 1,
-    members: []
-}];
-
-const BOARDS = [{
-    id: 1,
-    title: "100xSchool website (frontend)",
-    organizationId: 1
-}];
-const ISSUES = [{
-    id: 1,
-    title: "Add dark mode",
-    boardId: 1,
-    state: "IN_PROGRESS"
-}, {
-    id: 2,
-    title : "allow admins to create more courses",
-    boardId: 1,
-    issues: "DONE"
-}];
+const USERS = [];
+const ORGANIZATIONS = [];
+const BOARDS = [];
+const ISSUES = [];
 
 // CREATE
-app.post("/signup", (req, res) => {
+app.post("/signup", async (req, res) => {
     const username = req.body.username;
     const password = req.body.password;
 
-    const userExists = USERS.find(u => u.username === username);
+    // const userExists = USERS.find(u => u.username === username);
+    const userExists = await userModel.findOne({
+        username: username
+    });
+
 
     if(userExists){
         res.status(411).json({
@@ -76,23 +51,27 @@ app.post("/signup", (req, res) => {
         return;
     }
 
-    USERS.push({
-        id: USERS_ID++,
+    const newUser = await userModel.create({
         username: username,
         password: password
     })
     return res.status(200).json({
+        id: newUser._id,
         message: "User Signed Up successfully"
     })
 
 
 })
 
-app.post("/signin", (req, res) => {
+app.post("/signin", async (req, res) => {
     const username = req.body.username;
     const password = req.body.password;
 
-    const userExists = USERS.find(u => u.username === username && u.password === password);
+    const userExists = await userModel.findOne({
+        username: username,
+        password
+    });
+    
     if(!userExists){
         res.status(403).json({
             message: "Incorrect Credentials"
@@ -101,7 +80,7 @@ app.post("/signin", (req, res) => {
     }
 
     const token = jwt.sign({
-        userId: userExists.id
+        userId: userExists._id
     }, JWT_PASS);
 
 
@@ -114,37 +93,47 @@ app.post("/signin", (req, res) => {
 
 app.use(authMiddleware);
 
-app.post("/organization",(req, res) => {
+app.post("/organization",async(req, res) => {
     const userId = req.userId;
-    ORGANIZATIONS.push({
-        id: ORGANIZATION_ID++,
+
+    const newOrg = await organizationModel.create({
         title: req.body.title,
-        description: req.body.description,
-        admin: userId, 
+        description : req.body.description,
+        admin: userId,
         members: []
     })
 
     res.json({
         message: "Org Created",
-        id: ORGANIZATION_ID - 1
+        id: newOrg._id
     })
 
 })
 
-app.post("/add-member-to-organization",(req, res) => {
+app.post("/add-member-to-organization", async(req, res) => {
 
     const userId = req.userId;
     const organizationId = req.body.organizationId;
-    const memberUserUserame = req.body.memberUserUsername;
+    const memberUserame = req.body.memberUsername; // aakash (eg)
 
-    const organization = ORGANIZATIONS.find(org => org.id === organizationId);
-    if(!organization || organization.admin !== userId){
+    //const organization = ORGANIZATIONS.find(org => org.id === organizationId);
+
+    const organization =await organizationModel.findOne({
+        _id : organizationId,
+
+    })
+    
+    if(!organization || !organization.admin.equals(userId)){
         return res.status(411).json({
             message: "Either this org doesn't exist or you are not an admin of this org"
         })
     }
 
-    const memberUser = USERS.find(u => u.username === memberUserUserame)
+    //const memberUser = USERS.find(u => u.username === memberUserUserame)
+
+    const memberUser = await userModel.findOne({
+        username: memberUserame
+    })
 
     if(!memberUser){
         return res.status(411).json({
@@ -152,7 +141,13 @@ app.post("/add-member-to-organization",(req, res) => {
         })
     }
 
-    organization.members.push(memberUser.id)
+    await organizationModel.updateOne({
+        _id: organizationId
+    }, {
+        $push: {
+            "members" : memberUser._id
+        }
+    })
 
     res.status(200).json({
         message: "New Member Added"
@@ -168,6 +163,9 @@ app.post("/issue",(req, res) => {
 
 })
 
+
+
+
 //READ 
 app.get("/boards", (req, res) =>{
 
@@ -182,30 +180,25 @@ app.get("/members",  (req, res) =>{
 })
 
 
-app.get("/organizations", (req, res) =>{
+app.get("/organizations", async (req, res) =>{
     const userId = req.userId
-    const organizationId = parseInt(req.query.organizationId);
+    const organizationId = req.query.organizationId;
 
-    const organization = ORGANIZATIONS.find(org => org.id === organizationId);
+    //const organization = ORGANIZATIONS.find(org => org.id === organizationId);
 
-    if(!organization || organization.admin !== userId){
+    const organization = await organizationModel.findOne({
+        _id: organizationId
+    })
+
+    if(!organization || !organization.admin.equals(userId)){
         return res.status(403).json({
             message: "Either this org doesn't exists or you are not an admin of this org"
         })
     }
 
     res.json({
-        ...organization,
-        members: organization.members.map(memberId =>{
-            const user = USERS.find(user => user.id === memberId)
-            return {
-                id: user.id,
-                username: user.username
-            }
-        })
+        organization: organization
     })
-
-
 })
 
 
@@ -216,19 +209,27 @@ app.put("/issues", (req, res) =>{
 
 
 // Delete:
-app.delete("/members", (req, res) =>{
+app.delete("/members", async (req, res) =>{
     const userId = req.userId;
     const organizationId = req.body.organizationId;
-    const memberUsernUserame = req.body.memberUserUserame;
-
-    const organization = ORGANIZATIONS.find(org => org.id === organizationId);
-    if(!organization || organization.admin !== userId){
+    const memberUsername = req.body.memberUsername;
+    
+    // const organization = ORGANIZATIONS.find(org => org.id === organizationId);
+    const organization =await organizationModel.findOne({
+        _id: organizationId
+    })
+   
+   if(!organization || !organization.admin.equals(userId)){
         return res.status(411).json({
             message: "Either this org doesn't exist or you are not an admin of this org"
         })
     }
 
-    const memberUser = USERS.find(u => u.username === memberUsernUserame)
+    //const memberUser = USERS.find(u => u.username === memberUserame)
+
+    const memberUser =await userModel.findOne({
+        username: memberUsername
+    })
 
     if(!memberUser){
         return res.status(411).json({
@@ -236,11 +237,17 @@ app.delete("/members", (req, res) =>{
         })
     }
 
-    organization.members = organizations.members.filter(id => id !== memberUser.id);
-
+    //organization.members = organization.members.filter(id => id !== memberUser.id);
+    await organizationModel.updateOne({
+        _id: organizationId
+    }, {
+        $pull: {
+            "members" : memberUser._id
+        }
+    })
 
     res.status(200).json({
-        message: "New Member Added"
+        message: "Member Deleted"
     })
 
 })
