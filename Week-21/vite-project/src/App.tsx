@@ -68,11 +68,17 @@ function Todo({title, id, setTodos}: TodoType){
       {title}
     </div>
   
-    <button onClick={() => {
-      setTodos(todos => todos.filter(x => x.id !== id))
-    }}>Delete</button>
+    <DeleteButton setTodos={setTodos} id={id}></DeleteButton>
   </div>
 
+}
+
+function DeleteButton({setTodos, id}){
+  return <div>
+    <div style={{background: "orange", cursor: "pointer", border: "2px solid red"}} onClick={() =>{
+      setTodos(t => t.filter(x => x.id !== id))
+    }}>Delete</div>
+  </div>
 }
 
 
