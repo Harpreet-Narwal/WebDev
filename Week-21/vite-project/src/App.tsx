@@ -1,27 +1,32 @@
-import { useRef, useState } from 'react'
+import { useContext, useRef, useState } from 'react'
 
 import './App.css'
 import { useTodos } from './hooks/useTodos';
+import { SetTodosContext } from './context';
+
+
 
 function App() {
 
-  const [secondPassed, setSecondsPassed] = useState(0);
-  const intervalRef = useRef(null);
+  // const [secondPassed, setSecondsPassed] = useState(0);
+  // const intervalRef = useRef(null);
   const divRef = useRef<HTMLDivElement>(null);
 
-  function startClock(){
-    if(intervalRef.current !== null) return;
-    intervalRef.current = setInterval(() =>{
-      setSecondsPassed( s => s+1);
-    }, 1000)
-  }
 
-  function stopClock(){
-    if(intervalRef.current !== null){
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
-  }
+
+  // function startClock(){
+  //   if(intervalRef.current !== null) return;
+  //   intervalRef.current = setInterval(() =>{
+  //     setSecondsPassed( s => s+1);
+  //   }, 1000)
+  // }
+
+  // function stopClock(){
+  //   if(intervalRef.current !== null){
+  //     clearInterval(intervalRef.current);
+  //     intervalRef.current = null;
+  //   }
+  // }
 
   function onTop(){
     if(divRef.current){
@@ -52,10 +57,12 @@ function App() {
     const {todos, setTodos} = useTodos()
     
     return (
-      <div ref={divRef} style={{ overflowY: "auto", height: "100vh" }}>
-        {todos.map(t => <Todo title={t.title} id={t.id} setTodos={setTodos}></Todo>)}
-        <button onClick={onTop}>Click me to go to top</button>
-      </div>
+      <SetTodosContext.Provider value={{setTodos}}>
+        <div ref={divRef} style={{ overflowY: "auto", height: "100vh" }}>
+          {todos.map(t => <Todo title={t.title} id={t.id} setTodos={setTodos}></Todo>)}
+          <button onClick={onTop}>Click me to go to top</button>
+        </div>
+      </SetTodosContext.Provider>
     )
 }
 
@@ -68,17 +75,21 @@ function Todo({title, id, setTodos}: TodoType){
       {title}
     </div>
   
-    <DeleteButton setTodos={setTodos} id={id}></DeleteButton>
+    <DeleteButton id={id}></DeleteButton>
   </div>
 
 }
 
-function DeleteButton({setTodos, id}){
+function DeleteButton({id}){
+  // Context api usage:
+  const {setTodos} = useContext(SetTodosContext)
+
   return <div>
     <div style={{background: "orange", cursor: "pointer", border: "2px solid red"}} onClick={() =>{
       setTodos(t => t.filter(x => x.id !== id))
     }}>Delete</div>
   </div>
+   
 }
 
 
