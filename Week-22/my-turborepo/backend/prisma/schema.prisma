@@ -10,12 +10,11 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = "database_url"
 }
 
 model User {
-  id              String        @id   @default(uuid())
-  username        String
+  id              String        @id    @default(uuid())
+  username        String        @unique
   password        String
   avatars         Avatar[]
   avatarVideos    AvatarVideo[]
