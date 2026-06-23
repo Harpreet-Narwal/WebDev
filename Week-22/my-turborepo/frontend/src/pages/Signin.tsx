@@ -1,6 +1,6 @@
 
 export function Signin(){
     return <div>
-        Sign in route        
+        Sign in Page        
     </div>
 }
