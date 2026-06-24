@@ -9,7 +9,10 @@ import { GoogleGenAI } from "@google/genai"
 import { generateImage } from "./image";
 import  { uuid }  from "uuidv4";
 import { generateVideo } from "./video";
+import cors from "cors";
 
+
+ 
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
 const ai = new GoogleGenAI({
@@ -18,6 +21,7 @@ const ai = new GoogleGenAI({
 
 const app = express();
 app.use(express.json());
+app.use(cors())
 const SALT_ROUNDS = 10;
 
 
@@ -192,4 +196,6 @@ app.get("/api/v1/models", (req, res) =>{
 
 
 
-app.listen(3000);
+app.listen(3000, () =>{
+    console.log("Server running on post: 3000")
+});

@@ -7,11 +7,15 @@ import { Landing } from "./pages/Landing";
 import { Signup } from "./pages/Signup";
 import { Dashboard } from "./pages/Dashboard";
 import { VideoCreator } from "./pages/VideoCreator";
+import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
+
+const queryClient = new QueryClient();
 
 
 export function App() {
   return (
     <div>
+      <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <Appbar></Appbar>
         <Routes>
@@ -22,6 +26,7 @@ export function App() {
           <Route path="/video-creator" element={<VideoCreator/>}></Route>
         </Routes>
       </BrowserRouter>
+      </QueryClientProvider>
     </div>
   );
 }
