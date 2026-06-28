@@ -21,6 +21,7 @@ client.connect()
             if(language == "C++"){
                 console.log("Running users C++ code")
                 await new Promise((r) => setTimeout(r, 1000 * 10));
+                //sandboxing
             }
 
             if(language == 'js'){
@@ -32,3 +33,5 @@ client.connect()
         }
 
     });
+
+// SANDBOX, E2B

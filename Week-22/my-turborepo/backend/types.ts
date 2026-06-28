@@ -9,7 +9,7 @@ export const CreateAvatarSchema = z.object({
 declare global{
     namespace Express{
         interface Request{
-            userId?: number
+            userId?: string
         }
     }
 }

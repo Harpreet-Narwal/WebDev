@@ -5,8 +5,8 @@ import type { Request, Response, NextFunction } from "express";
 const JWT_SECRET = process.env.JWT_SECRET as string;
 
 
-interface AuthRequest extends Request {
-    userId?: number;
+export interface AuthRequest extends Request {
+    userId?: string;
 }
 
 
@@ -32,7 +32,7 @@ export function authMiddleware(req:AuthRequest, res: Response, next: NextFunctio
 
     try{
         const decoded = jwt.verify(token, JWT_SECRET)
-        const userId = parseInt(decoded.userId);
+        const userId = decoded.userId as string;
 
         if(!userId){
             res.status(403).json({

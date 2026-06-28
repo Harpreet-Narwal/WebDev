@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 import {promise, z} from "zod";
 import bcrypt from "bcrypt";
 import { CreateAvatarSchema } from "./types";
-import { authMiddleware } from "./middleware"
+import { authMiddleware, type AuthRequest } from "./middleware"
 import { GoogleGenAI } from "@google/genai"
 import { generateImage } from "./image";
 import  { uuid }  from "uuidv4";
@@ -131,10 +131,12 @@ app.post("/api/v1/signin", async (req, res) =>{
 
 
 // AVATAR: 
-
-
-app.post("/api/v1/avatar", async (req, res) =>{
-    // const userId = req.userId;
+app.post("/api/v1/avatar", authMiddleware ,async (req: AuthRequest, res) =>{
+    const userId = req.userId;
+    if (!userId) {
+        return res.status(403).json({ message: "Unauthorized" });
+    }
+    
     const {success, data} = CreateAvatarSchema.safeParse(req.body);
     
     if(!success){
@@ -154,18 +156,81 @@ app.post("/api/v1/avatar", async (req, res) =>{
     
     ])
 
-    // put in s3 and then put in db
+    // put in s3 and then put in db or just put it in the db for now...
 
-    res.json()
+    const avatar = await prisma.avatar.create({
+        data:{
+            userId: userId,
+            name: data.name,
+            avatarImages: {
+                create: [
+                    {type: "Model", url: leftProfileId},
+                    {type: "Model", url: rightProfileId},
+                    {type: "Model", url: frontProfileId},
+                ]
+            }
+        }
+    })
+
+    res.status(200).json({
+        message: "Avatar created",
+        avatarId: avatar.id,
+        leftProfileId,
+        rightProfileId, 
+        frontProfileId
+    })
 })
  
 
-app.get("/api/v1/avatar/:avatarId", (req, res) =>{
+app.get("/api/v1/avatar/:avatarId",authMiddleware, async(req, res) =>{
+    const userId = req.userId;
+
+    if(!userId){
+        return res.status(403).json({ message: "Unauthorized" });
+    }
+
+    const avatarId = req.params.avatarId as string;
+
+    const avatar = await prisma.avatar.findFirst({
+        where: {
+            id: avatarId,
+            userId: userId,
+        },
+        include: {
+            avatarImages: true
+        }
+    })
+
+    if(!avatar){
+        return res.status(404).json({
+            message: "Avatar not found"
+        })
+    }
+
+    res.json({avatar});
 
 })
 
-app.get("/api/v1/avatars", (req, res) =>{
-    
+app.get("/api/v1/avatars", authMiddleware  ,async (req, res) =>{
+    const userId = req.userId;
+
+    if(!userId){
+        return res.status(403).json({message: "Unauthorized"});
+    }
+
+    const avatars = await prisma.avatar.findMany({
+        where:{
+            userId
+        },
+        include:{
+            avatarImages: true
+        }  
+    })
+
+    res.status(200).json({
+        message:"Avatars",
+        avatars
+    })
 })
 
 // VIDEOS:
